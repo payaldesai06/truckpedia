@@ -1,0 +1,1 @@
+{"version":1,"defects":{"Tests\\Unit\\addTenderLoadTest::test_new_GE_load":5},"times":{"Tests\\Unit\\addTenderLoadTest::test_new_GE_load":2.116,"Tests\\Unit\\addTenderLoadTest::test_new_Transplace_load":1.34,"Tests\\Unit\\addTenderLoadTest::test_update_GE_load":1.051,"Tests\\Unit\\addTenderLoadTest::test_update_Transplace_load":0.729}}

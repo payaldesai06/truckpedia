@@ -1,0 +1,138 @@
+/*========================================================
+        DARK LAYOUT
+=========================================================*/
+html, body {
+    font-size: 13px;
+}
+
+.invoice-page {
+    padding: 2.2rem;
+}
+
+.invoice-page .recipient-contact i,
+.invoice-page .company-contact i {
+    padding-right: 0.2rem;
+    position: relative;
+    top: 2px;
+}
+
+.invoice-page .recipient-info p,
+.invoice-page .company-info p,
+.invoice-page .company-contact p,
+.invoice-page .recipient-contact p {
+    line-height: 2;
+    margin-bottom: 0;
+}
+
+.invoice-page .invoice-items-table table,
+.invoice-page .invoice-total-table table {
+    border: 0.5px solid #8e8e8e33;
+}
+
+#invoice-items-details thead {
+    border: 0.1px dotted #8e8e8e33;
+}
+
+#invoice-company-details {
+    /*height: 395px;*/
+}
+
+#invoice-company-details .block-1 {
+    float: left;
+    width: 50%;
+}
+
+#invoice-company-details .block-2 {
+    float: right;
+    width: 50%;
+    text-align: right;
+}
+
+#invoice-total-details td:last-child {
+    text-align: right;
+}
+
+body {
+    background-color: #ffffff;
+}
+
+@media print {
+    .content-header,
+    .buy-now,
+    .btn-print,
+    .footer,
+    .open,
+    .main-menu,
+    .invoice-print {
+        display: none;
+    }
+    .app-content,
+    #invoice-template,
+    .navbar-container,
+    .navbar-wrapper,
+    .header-navbar,
+    .invoice-print,
+    .content-wrapper {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    #invoice-footer {
+        position: relative;
+        top: -80px !important;
+    }
+    #invoice-company-details,
+    #invoice-footer {
+        margin-top: 5rem !important;
+    }
+    .table-responsive {
+        -ms-overflow-style: none;
+    }
+}
+
+@page {
+    margin: 10px;
+}
+
+.address p {
+    line-height: 8px;
+}
+
+/**
+* shippers
+ */
+#shippers {
+    width: 100%;
+}
+#shippers .left-side {
+    float: left;
+}
+#shippers .right-side {
+    float: right;
+    text-align: right;
+}
+#shippers .left-side {
+    width: 70%;
+}
+#shippers .right-side {
+    width: 30%;
+}
+
+/**
+* receivers
+ */
+#receivers {
+    width: 100%;
+}
+#receivers .left-side {
+    float: left;
+}
+#receivers .right-side {
+    float: right;
+    text-align: right;
+}
+#receivers .left-side {
+    width: 70%;
+}
+#receivers .right-side {
+    width: 30%;
+}

@@ -1,0 +1,13 @@
+/*Radio Button*/
+#ownership li {
+    display: flex;
+}
+
+#ownership li .vs-radio {
+    order: 1;
+    margin-left: 0.5rem;
+}
+
+#ownership li .vs-radio--label {
+    font-size: 0.9rem;
+}

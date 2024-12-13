@@ -1,0 +1,1 @@
+export default {customization: state => state.customization}

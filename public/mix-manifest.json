@@ -1,0 +1,19 @@
+{
+    "/js/app.js": "/js/app.js",
+    "/css/app.css": "/css/app.css",
+    "/css/main.css": "/css/main.css",
+    "/js/app.js.map": "/js/app.js.map",
+    "/css/app.css.map": "/css/app.css.map",
+    "/css/main.css.map": "/css/main.css.map",
+    "/css/loader.css": "/css/loader.css",
+    "/css/vuesax.css": "/css/vuesax.css",
+    "/css/vuetify.min.css": "/css/vuetify.min.css",
+    "/css/vue-select.css": "/css/vue-select.css",
+    "/css/primevue.min.css": "/css/primevue.min.css",
+    "/css/theme.css": "/css/theme.css",
+    "/css/primeicons.css": "/css/primeicons.css",
+    "/css/primevue.css": "/css/primevue.css",
+    "/css/iconfont.css": "/css/iconfont.css",
+    "/css/material-icons/material-icons.css": "/css/material-icons/material-icons.css",
+    "/css/prism-tomorrow.css": "/css/prism-tomorrow.css"
+}

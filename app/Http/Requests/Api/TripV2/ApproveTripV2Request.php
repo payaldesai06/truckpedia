@@ -1,0 +1,213 @@
+<?php
+
+namespace App\Http\Requests\Api\TripV2;
+
+use Exception;
+use Illuminate\Foundation\Http\FormRequest;
+
+class ApproveTripV2Request extends FormRequest {
+  /**
+   * Determine if the user is authorized to make this request.
+   *
+   * @return bool
+   */
+  public function authorize(): bool {
+    return true;
+  }
+
+  /**
+   * Get the validation rules that apply to the request.
+   * @return array
+   * @throws Exception
+   */
+  public function rules(): array {
+    $companyId = getAuthAdminCompanyId();
+    $formulaTypes = 'formulaLoadedMiles,formulaEmptyMiles';
+    return [
+      'tripId' => 'required|integer|exists:trips_v2,id,company_id,' . $companyId,
+      'driverPayType' => 'required|string|in:' . implode(',', config('constant.trip.driver_pay_type')),
+      'payPercentageDetails.payPercentage' => 'required_if:driverPayType,' . config('constant.trip.driver_pay_type')[3] . '|numeric|min:0|max:100',
+      'payPercentageDetails.payPercentageOf' => 'required_if:driverPayType,' . config('constant.trip.driver_pay_type')[3] . '|nullable|string|in:' . implode(',', config('constant.trip.percentage_type')),
+      'payPercentageDetails.payPercentageLoadAmount' => 'required_if:driverPayType,' . config('constant.trip.driver_pay_type')[3] . '|nullable|numeric|min:0|max:999999.99',
+      'payHourlyDetails.hourlyRate' => 'required_if:driverPayType,' . config('constant.trip.driver_pay_type')[2] . '|numeric|min:0|max:9999.99',
+      'payHourlyDetails.totalHours' => 'required_if:driverPayType,' . config('constant.trip.driver_pay_type')[2] . '|numeric|min:0|max:9999.99',
+      'payMileDetails.loadedDistanceRate' => 'required_if:driverPayType,' . config('constant.trip.driver_pay_type')[1] . '|numeric|min:0|max:99.99',
+      'payMileDetails.totalLoadedDistance' => 'required_if:driverPayType,' . config('constant.trip.driver_pay_type')[1] . '|numeric|min:0|max:999999.9999',
+      'payMileDetails.emptyDistanceRate' => 'nullable|numeric|min:0|max:99.99',
+      'payMileDetails.totalEmptyDistance' => 'nullable|numeric|min:0|max:999999.9999',
+      'payMileDetails.stopRate' => 'nullable|numeric|min:0|max:9999.99',
+      'payMileDetails.stopCount' => 'nullable|integer|min:0|max:32767',
+      'payMileDetails.stopPayStartAfter' => 'nullable|integer|min:0|max:32767',
+      'payMileDetails.stopPayment' => 'nullable|numeric|min:0|max:9999.99',
+      'payMileDetails.detentionRate' => 'nullable|numeric|min:0|max:9999.99',
+      'payMileDetails.detentionInHours' => 'nullable|numeric|min:0|max:9999.99',
+      'payMileDetails.detentionPayStartAfter' => 'nullable|numeric|min:0|max:9999.99',
+      'payMileDetails.detentionPayment' => 'nullable|numeric|min:0|max:9999.99',
+      'payMileDetails.layoverRate' => 'nullable|numeric|min:0|max:9999.99',
+      'payMileDetails.layoverInHours' => 'nullable|numeric|min:0|max:9999.99',
+      'payMileDetails.layoverPayStartAfter' => 'nullable|numeric|min:0|max:9999.99',
+      'payMileDetails.layoverPayment' => 'nullable|numeric|min:0|max:9999.99',
+      //TODO: shall allow negative value. Also change the error message.
+      'loadPayment' => 'required|numeric|min:0|max:999999.99',
+      //TODO: shall allow negative value. Also change the error message.
+      'reimbursement' => 'nullable|numeric|min:0|max:999999.99',
+      'additionalCustomPayments' => 'nullable|array',
+      'additionalCustomPayments.*.customPaymentId' => 'nullable|integer|exists:trips_v2_additional_custom_payments,id',
+      'additionalCustomPayments.*.fieldId' => 'required|integer|exists:trips_v2_custom_payment_fields,id,company_id,' . $companyId,
+      //TODO: shall allow negative value. Also change the error message.
+      'additionalCustomPayments.*.payment' => 'required|numeric|min:0|max:999999.99',
+      //TODO: shall allow negative value. Also change the error message.
+      'totalPayment' => 'required|numeric|min:0|max:999999.99',
+      'notes' => 'nullable|string|max:4000',
+      'payTemplateDetails' => 'required_if:driverPayType,' . config('constant.trip.driver_pay_type')[5],
+      'payTemplateDetails.loadDetails' => 'nullable|array',
+      'payTemplateDetails.loadDetails.*.tripTemplatePayDetailId' => 'nullable|integer|exists:trips_v2_template_pay_details,id,trip_id,' . request('tripId'),
+      'payTemplateDetails.loadDetails.*.loadId' => 'required|integer|exists:loads,id,admin_company_detail_id,' . $companyId,
+      'payTemplateDetails.loadDetails.*.fieldId' => 'required|integer|exists:driver_pay_template_custom_fields,id,company_id,' . $companyId,
+      'payTemplateDetails.loadDetails.*.comment' => 'nullable|string|max:255',
+      'payTemplateDetails.loadDetails.*.payment' => 'required|numeric|between:-999999.99,999999.99',
+      'payTemplateDetails.loadDetails.*.qty' => 'required|numeric|between:-999999.9999,999999.9999',
+      'payTemplateDetails.loadDetails.*.rate' => 'required_without:payTemplateDetails.loadDetails.*.percentage|numeric|between:-999999.99,999999.99',
+      'payTemplateDetails.loadDetails.*.percentage' => 'required_without:payTemplateDetails.loadDetails.*.rate|numeric|between:-100,100',
+      'payTemplateDetails.loadDetails.*.payStartAfter' => 'nullable|integer|between:0,9999',
+      'payTemplateDetails.loadDetails.*.v1' => 'nullable|numeric|between:-99.9999,99.9999',
+      'payTemplateDetails.loadDetails.*.v2' => 'nullable|numeric|between:-99.9999,99.9999',
+      'payTemplateDetails.loadDetails.*.v3' => 'nullable|numeric|between:-99.9999,99.9999',
+      'payTemplateDetails.tripDetails' => 'nullable|array',
+      'payTemplateDetails.tripDetails.*.tripTemplatePayDetailId' => 'nullable|integer|exists:trips_v2_template_pay_details,id,trip_id,' . request('tripId'),
+      'payTemplateDetails.tripDetails.*.fieldId' => 'required|integer|exists:driver_pay_template_custom_fields,id,company_id,' . $companyId,
+      'payTemplateDetails.tripDetails.*.comment' => 'nullable|string|max:255',
+      'payTemplateDetails.tripDetails.*.payment' => 'required|numeric|between:-999999.99,999999.99',
+      'payTemplateDetails.tripDetails.*.qty' => 'required|numeric|between:-999999.9999,999999.9999',
+      'payTemplateDetails.tripDetails.*.rate' => 'required_without:payTemplateDetails.tripDetails.*.percentage|numeric|between:-999999.99,999999.99',
+      'payTemplateDetails.tripDetails.*.percentage' => 'required_without:payTemplateDetails.tripDetails.*.rate|numeric|between:-100,100',
+      'payTemplateDetails.tripDetails.*.payStartAfter' => 'nullable|integer|between:0,9999',
+    ];
+  }
+
+  public function messages(): array {
+    $formulaTypes = 'formulaLoadedMiles|formulaEmptyMiles';
+    return [
+      'driverPayType.in' => 'The driver pay type field must be in ' . implode('|', config('constant.trip.driver_pay_type')) . '.',
+      'payPercentageDetails.payPercentage.required_if' => 'The pay percentage field is required when driver pay type is percentage.',
+      'payPercentageDetails.payPercentage.numeric' => 'The pay percentage field must be a number.',
+      'payPercentageDetails.payPercentage.min' => 'The pay percentage must be greater than or equal to 0.',
+      'payPercentageDetails.payPercentage.max' => 'The pay percentage may not be greater than 100.',
+      'payPercentageDetails.payPercentageOf.required_if' => 'The pay percentage of field is required when driver pay type is percentage.',
+      'payPercentageDetails.payPercentageOf.string' => 'The pay percentage of field must be a string.',
+      'payPercentageDetails.payPercentageOf.in' => 'The pay percentage of field must be in ' . implode(',', config('constant.trip.percentage_type')) . '.',
+      'payPercentageDetails.payPercentageLoadAmount.required_if' => 'The pay percentage load amount field is required when driver pay type is percentage.',
+      'payPercentageDetails.payPercentageLoadAmount.numeric' => 'The pay percentage load amount field must be a number.',
+      'payPercentageDetails.payPercentageLoadAmount.min' => 'The pay percentage load amount field must be between 0 and 999999.99.',
+      'payPercentageDetails.payPercentageLoadAmount.max' => 'The pay percentage load amount field must be between 0 and 999999.99.',
+      'payHourlyDetails.hourlyRate.required_if' => 'The hourly rate field is required.',
+      'payHourlyDetails.hourlyRate.numeric' => 'The hourly rate field must be an number.',
+      'payHourlyDetails.hourlyRate.min' => 'The hourly rate field must be between 0 and 9999.99.',
+      'payHourlyDetails.hourlyRate.max' => 'The hourly rate field must be between 0 and 9999.99.',
+      'payHourlyDetails.totalHours.required_if' => 'The total hours field is required.',
+      'payHourlyDetails.totalHours.numeric' => 'The total hours field must be a number.',
+      'payHourlyDetails.totalHours.min' => 'The total hours must be between 0 and 9999.99.',
+      'payHourlyDetails.totalHours.max' => 'The total hours must be between 0 and 9999.99.',
+      'payMileDetails.loadedDistanceRate.required_if' => 'The loaded distance rate field is required.',
+      'payMileDetails.loadedDistanceRate.numeric' => 'The loaded distance rate field must be a number.',
+      'payMileDetails.loadedDistanceRate.min' => 'The loaded distance rate must be between 0 and 99.99.',
+      'payMileDetails.loadedDistanceRate.max' => 'The loaded distance rate must be between 0 and 99.99.',
+      'payMileDetails.totalLoadedDistance.required_if' => 'The total loaded distance field is required.',
+      'payMileDetails.totalLoadedDistance.numeric' => 'The total loaded distance field must be a number.',
+      'payMileDetails.totalLoadedDistance.min' => 'The total loaded distance field must be between 0 and 999999.9999.',
+      'payMileDetails.totalLoadedDistance.max' => 'The total loaded distance field must be between 0 and 999999.9999.',
+      'payMileDetails.emptyDistanceRate.numeric' => 'The empty distance rate field must be a number.',
+      'payMileDetails.totalEmptyDistance.numeric' => 'The total empty distance field must be a number.',
+      'payMileDetails.totalEmptyDistance.min' => 'The total empty distance field must be between 0 and 999999.9999.',
+      'payMileDetails.totalEmptyDistance.max' => 'The total empty distance field must be between 0 and 999999.9999.',
+      'payMileDetails.stopRate.numeric' => 'The stop rate field must be a number.',
+      'payMileDetails.stopCount.integer' => 'The stop count field must be an integer.',
+      'payMileDetails.stopPayStartAfter.integer' => 'The stop pay start after field must be an integer.',
+      'payMileDetails.stopPayment.numeric' => 'The stop payment field must be a number.',
+      'payMileDetails.stopPayment.min' => 'The stop payment field must be between 0 and 9999.99.',
+      'payMileDetails.stopPayment.max' => 'The stop payment field must be between 0 and 9999.99.',
+      'payMileDetails.detentionRate.numeric' => 'The detention rate field must be a number.',
+      'payMileDetails.detentionRate.min' => 'The detention rate field be between 0 and 9999.99.',
+      'payMileDetails.detentionRate.max' => 'The detention rate field be between 0 and 9999.99.',
+      'payMileDetails.detentionInHours.numeric' => 'The detention in hours field must be a number.',
+      'payMileDetails.detentionInHours.min' => 'The detention in hours field must be between 0 and 9999.99.',
+      'payMileDetails.detentionInHours.max' => 'The detention in hours field must be between 0 and 9999.99.',
+      'payMileDetails.detentionPayStartAfter.numeric' => 'The detention pay start after field must be a number.',
+      'payMileDetails.detentionPayStartAfter.min' => 'The detention pay start after field must be between 0 and 9999.99.',
+      'payMileDetails.detentionPayStartAfter.max' => 'The detention pay start after field must be between 0 and 9999.99.',
+      'payMileDetails.detentionPayment.numeric' => 'The detention payment field must be a number.',
+      'payMileDetails.detentionPayment.min' => 'The detention payment field must be between 0 and 9999.99.',
+      'payMileDetails.detentionPayment.max' => 'The detention payment field must be between 0 and 9999.99.',
+      'payMileDetails.layoverRate.numeric' => 'The layoverRate field must be a number.',
+      'payMileDetails.layoverRate.min' => 'The layoverRate field must be between 0 and 9999.99.',
+      'payMileDetails.layoverRate.max' => 'The layoverRate field must be between 0 and 9999.99.',
+      'payMileDetails.layoverInHours.numeric' => 'The layoverInHours field must be a number.',
+      'payMileDetails.layoverInHours.min' => 'The layoverInHours field must be between 0 and 9999.99.',
+      'payMileDetails.layoverInHours.max' => 'The layoverInHours field must be between 0 and 9999.99.',
+      'payMileDetails.layoverPayStartAfter.numeric' => 'The layover pay start after field must be a number.',
+      'payMileDetails.layoverPayStartAfter.min' => 'The layover pay start after field must be between 0 and 9999.99.',
+      'payMileDetails.layoverPayStartAfter.max' => 'The layover pay start after field must be between 0 and 9999.99.',
+      'payMileDetails.layoverPayment.numeric' => 'The layover payment field must be a number.',
+      'payMileDetails.layoverPayment.min' => 'The layover payment field must be between 0 and 9999.99.',
+      'payMileDetails.layoverPayment.max' => 'The layover payment field must be between 0 and 9999.99.',
+      'additionalCustomPayments.*.customPaymentId.integer' => 'The additional custom payments customPaymentId field must be an integer.',
+      'additionalCustomPayments.*.customPaymentId.exists' => 'The additional custom payments customPaymentId field is invalid.',
+      'additionalCustomPayments.*.fieldId.required' => 'The additional custom payments field is required.',
+      'additionalCustomPayments.*.fieldId.integer' => 'The additional custom payments field must be an integer.',
+      'additionalCustomPayments.*.fieldId.exists' => 'The additional custom payments field is invalid.',
+      'additionalCustomPayments.*.payment.required' => 'The additional custom payments field is required.',
+      'additionalCustomPayments.*.payment.numeric' => 'The additional custom payments field must be a number.',
+      'additionalCustomPayments.*.payment.min' => 'The additional custom payments field must be between 0 and 999999.99.',
+      'additionalCustomPayments.*.payment.max' => 'The additional custom payments field must be between 0 and 999999.99.',
+
+      'payTemplateDetails.loadDetails.*.detailId.integer' => 'The payTemplateDetails loadDetails detailId field must be an integer.',
+      'payTemplateDetails.loadDetails.*.detailId.exists' => 'The payTemplateDetails loadDetails detailId field is invalid.',
+      'payTemplateDetails.loadDetails.*.loadId.required' => 'The payTemplateDetails loadDetails loadId field is required.',
+      'payTemplateDetails.loadDetails.*.fieldId.required' => 'The payTemplateDetails loadDetails fieldId field is required.',
+      'payTemplateDetails.loadDetails.*.fieldId.integer' => 'The payTemplateDetails loadDetails fieldId field must be an integer.',
+      'payTemplateDetails.loadDetails.*.fieldId.exists' => 'The payTemplateDetails loadDetails fieldId field is invalid.',
+      'payTemplateDetails.loadDetails.*.comment.string' => 'The payTemplateDetails loadDetails comment must be a string.',
+      'payTemplateDetails.loadDetails.*.payment.required' => 'The payTemplateDetails loadDetails payment field is required.',
+      'payTemplateDetails.loadDetails.*.payment.numeric' => 'The payTemplateDetails loadDetails payment field must be a number.',
+      'payTemplateDetails.loadDetails.*.payment.between' => 'The payTemplateDetails loadDetails payment field must be between -999999.99 and 999999.99',
+      'payTemplateDetails.loadDetails.*.qty.required' => 'The payTemplateDetails loadDetails qty field is required.',
+      'payTemplateDetails.loadDetails.*.qty.numeric' => 'The payTemplateDetails loadDetails qty field must be a number.',
+      'payTemplateDetails.loadDetails.*.qty.between' => 'The payTemplateDetails loadDetails qty field must be between -999999.9999 and 999999.9999',
+      'payTemplateDetails.loadDetails.*.rate.required' => 'The payTemplateDetails loadDetails rate field is required.',
+      'payTemplateDetails.loadDetails.*.rate.numeric' => 'The payTemplateDetails loadDetails rate field must be a number.',
+      'payTemplateDetails.loadDetails.*.rate.between' => 'The payTemplateDetails loadDetails rate field must be between -999999.99 and 999999.99',
+      'payTemplateDetails.loadDetails.*.percentage.required' => 'The payTemplateDetails loadDetails percentage field is required.',
+      'payTemplateDetails.loadDetails.*.percentage.numeric' => 'The payTemplateDetails loadDetails percentage field must be a number.',
+      'payTemplateDetails.loadDetails.*.percentage.between' => 'The payTemplateDetails loadDetails percentage field must be between -100 and 100',
+      'payTemplateDetails.loadDetails.*.payStartAfter.integer' => 'The payTemplateDetails loadDetails payStartAfter field must be a integer.',
+      'payTemplateDetails.loadDetails.*.payStartAfter.between' => 'The payTemplateDetails loadDetails payStartAfter field must be between -0 and 9999',
+      'payTemplateDetails.loadDetails.*.v1.numeric' => 'The payTemplateDetails loadDetails v1 field must be a number.',
+      'payTemplateDetails.loadDetails.*.v1.between' => 'The payTemplateDetails loadDetails v1 field must be between -99.9999 and 99.9999.',
+      'payTemplateDetails.loadDetails.*.v2.numeric' => 'The payTemplateDetails loadDetails v2 field must be a number.',
+      'payTemplateDetails.loadDetails.*.v2.between' => 'The payTemplateDetails loadDetails v2 field must be between -99.9999 and 99.9999.',
+      'payTemplateDetails.loadDetails.*.v3.numeric' => 'The payTemplateDetails loadDetails v3 field must be a number.',
+      'payTemplateDetails.loadDetails.*.v3.between' => 'The payTemplateDetails loadDetails v3 field must be between -99.9999 and 99.9999.',
+
+      'payTemplateDetails.tripDetails.*.detailId.integer' => 'The payTemplateDetails tripDetails detailId field must be an integer.',
+      'payTemplateDetails.tripDetails.*.detailId.exists' => 'The payTemplateDetails tripDetails detailId field is invalid.',
+      'payTemplateDetails.tripDetails.*.fieldId.required' => 'The payTemplateDetails tripDetails fieldId field is required.',
+      'payTemplateDetails.tripDetails.*.fieldId.integer' => 'The payTemplateDetails tripDetails fieldId field must be an integer.',
+      'payTemplateDetails.tripDetails.*.fieldId.exists' => 'The payTemplateDetails tripDetails fieldId field is invalid.',
+      'payTemplateDetails.tripDetails.*.comment.string' => 'The payTemplateDetails tripDetails comment must be a string.',
+      'payTemplateDetails.tripDetails.*.payment.required' => 'The payTemplateDetails tripDetails payment field is required.',
+      'payTemplateDetails.tripDetails.*.payment.numeric' => 'The payTemplateDetails tripDetails payment field must be a number.',
+      'payTemplateDetails.tripDetails.*.payment.between' => 'The payTemplateDetails tripDetails payment field must be between -999999.99 and 999999.99',
+      'payTemplateDetails.tripDetails.*.qty.required' => 'The payTemplateDetails tripDetails qty field is required.',
+      'payTemplateDetails.tripDetails.*.qty.numeric' => 'The payTemplateDetails tripDetails qty field must be a number.',
+      'payTemplateDetails.tripDetails.*.qty.between' => 'The payTemplateDetails tripDetails qty field must be between -999999.9999 and 999999.9999',
+      'payTemplateDetails.tripDetails.*.rate.required' => 'The payTemplateDetails tripDetails rate field is required.',
+      'payTemplateDetails.tripDetails.*.rate.numeric' => 'The payTemplateDetails tripDetails rate field must be a number.',
+      'payTemplateDetails.tripDetails.*.rate.between' => 'The payTemplateDetails tripDetails rate field must be between -999999.99 and 999999.99',
+      'payTemplateDetails.tripDetails.*.percentage.required' => 'The payTemplateDetails tripDetails percentage field is required.',
+      'payTemplateDetails.tripDetails.*.percentage.numeric' => 'The payTemplateDetails tripDetails percentage field must be a number.',
+      'payTemplateDetails.tripDetails.*.percentage.between' => 'The payTemplateDetails tripDetails percentage field must be between -100 and 100',
+      'payTemplateDetails.tripDetails.*.payStartAfter.integer' => 'The payTemplateDetails tripDetails payStartAfter field must be a integer.',
+      'payTemplateDetails.tripDetails.*.payStartAfter.between' => 'The payTemplateDetails tripDetails payStartAfter field must be between -0 and 9999',
+    ];
+  }
+}

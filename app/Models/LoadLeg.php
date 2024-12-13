@@ -1,0 +1,21 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class LoadLeg extends Model
+{
+    use SoftDeletes;
+    protected $guarded = [];
+
+    /* convert string time into date time format */
+    protected $dates = ['time', 'end_time'];
+
+    public function loadDetail()
+    {
+        return $this->belongsTo(Load::class, 'load_id');
+    }
+}

@@ -1,0 +1,31 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class ChangeIntermodelColumnsStringToDateTypeInLoadsTable extends Migration {
+  /**
+   * Run the migrations.
+   *
+   * @return void
+   */
+  public function up() {
+    Schema::table('loads', function (Blueprint $table) {
+      $table->date('arrival_date')->nullable()->change();
+      $table->date('last_free_date')->nullable()->change();
+    });
+  }
+
+  /**
+   * Reverse the migrations.
+   *
+   * @return void
+   */
+  public function down() {
+    Schema::table('loads', function (Blueprint $table) {
+      $table->string('arrival_date')->nullable()->change();
+      $table->string('last_free_date')->nullable()->change();
+    });
+  }
+}
