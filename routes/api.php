@@ -789,6 +789,15 @@ Route::namespace('Api')->group(function () {
         });
       });
 
+      Route::prefix('homeTab')->namespace('HomeTab')->group(function () {
+        Route::post('getOverview', 'HomeTabController@getOverview');
+        Route::post('customerOverview', 'HomeTabController@customerOverview');
+        Route::post('driverOverview', 'HomeTabController@driverOverview');
+        Route::post('truckOverview', 'HomeTabController@truckOverview');
+        Route::post('dispatcherOverview', 'HomeTabController@dispatcherOverview');
+        Route::post('marketOverview', 'HomeTabController@marketOverview');
+      });
+
       Route::prefix('load')->group(function () {
         Route::prefix('pipeline')->group(function () {
           // Dispatch -> Pipeline API.
